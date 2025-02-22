@@ -5,7 +5,7 @@ import re
 
 import numpy as np
 import pytest
-from numpy.testing import suppress_warnings
+from numpy.testing import suppress_warnings, assert_allclose, assert_array_equal
 from pytest import raises as assert_raises
 from scipy import ndimage
 from scipy._lib._array_api import (
@@ -191,6 +191,7 @@ class TestNdimageFilters:
 
     @xfail_xp_backends('cupy', reason="Differs by a factor of two?")
     @skip_xp_backends("jax.numpy", reason="output array is read-only.")
+    @xfail_xp_backends("dask.array", reason="wrong answer")
     def test_correlate01_overlap(self, xp):
         array = xp.reshape(xp.arange(256), (16, 16))
         weights = xp.asarray([2])
@@ -533,6 +534,7 @@ class TestNdimageFilters:
         assert_array_almost_equal(output, expected)
 
     @skip_xp_backends("jax.numpy", reason="output array is read-only.")
+    @skip_xp_backends("dask.array", reason="converts dask output array to numpy")
     @pytest.mark.parametrize('dtype_array', types)
     @pytest.mark.parametrize('dtype_output', types)
     def test_correlate23(self, dtype_array, dtype_output, xp):
@@ -552,6 +554,7 @@ class TestNdimageFilters:
         assert_array_almost_equal(output, expected)
 
     @skip_xp_backends("jax.numpy", reason="output array is read-only.")
+    @skip_xp_backends("dask.array", reason="converts dask output array to numpy")
     @pytest.mark.parametrize('dtype_array', types)
     @pytest.mark.parametrize('dtype_output', types)
     def test_correlate24(self, dtype_array, dtype_output, xp):
@@ -572,6 +575,7 @@ class TestNdimageFilters:
         assert_array_almost_equal(output, tcov)
 
     @skip_xp_backends("jax.numpy", reason="output array is read-only.")
+    @skip_xp_backends("dask.array", reason="converts dask output array to numpy")
     @pytest.mark.parametrize('dtype_array', types)
     @pytest.mark.parametrize('dtype_output', types)
     def test_correlate25(self, dtype_array, dtype_output, xp):
@@ -877,6 +881,7 @@ class TestNdimageFilters:
         assert_array_almost_equal(output1, output2)
 
     @skip_xp_backends("jax.numpy", reason="output array is read-only.")
+    @skip_xp_backends("dask.array", reason="converts dask output array to numpy")
     def test_gauss_memory_overlap(self, xp):
         input = xp.arange(100 * 100, dtype=xp.float32)
         input = xp.reshape(input, (100, 100))
@@ -1223,6 +1228,7 @@ class TestNdimageFilters:
         assert_array_almost_equal(t, output)
 
     @skip_xp_backends("jax.numpy", reason="output array is read-only.")
+    @skip_xp_backends("dask.array", reason="converts dask output array to numpy")
     @pytest.mark.parametrize('dtype', types + complex_types)
     def test_prewitt02(self, dtype, xp):
         if is_torch(xp) and dtype in ("uint16", "uint32", "uint64"):
@@ -1285,6 +1291,7 @@ class TestNdimageFilters:
         assert_array_almost_equal(t, output)
 
     @skip_xp_backends("jax.numpy", reason="output array is read-only.",)
+    @skip_xp_backends("dask.array", reason="converts dask output array to numpy")
     @pytest.mark.parametrize('dtype', types + complex_types)
     def test_sobel02(self, dtype, xp):
         if is_torch(xp) and dtype in ("uint16", "uint32", "uint64"):
@@ -1345,6 +1352,7 @@ class TestNdimageFilters:
         assert_array_almost_equal(tmp1 + tmp2, output)
 
     @skip_xp_backends("jax.numpy", reason="output array is read-only",)
+    @skip_xp_backends("dask.array", reason="converts dask output array to numpy")
     @pytest.mark.parametrize('dtype',
                              ["int32", "float32", "float64",
                               "complex64", "complex128"])
@@ -1375,6 +1383,7 @@ class TestNdimageFilters:
         assert_array_almost_equal(tmp1 + tmp2, output)
 
     @skip_xp_backends("jax.numpy", reason="output array is read-only")
+    @skip_xp_backends("dask.array", reason="converts dask output array to numpy")
     @pytest.mark.parametrize('dtype',
                              ["int32", "float32", "float64",
                               "complex64", "complex128"])
@@ -1391,6 +1400,7 @@ class TestNdimageFilters:
         assert_array_almost_equal(tmp1 + tmp2, output)
 
     @skip_xp_backends("jax.numpy", reason="output array is read-only.")
+    @skip_xp_backends("dask.array", reason="converts dask output array to numpy")
     @pytest.mark.parametrize('dtype', types + complex_types)
     def test_generic_laplace01(self, dtype, xp):
         if is_torch(xp) and dtype in ("uint16", "uint32", "uint64"):
@@ -1416,6 +1426,7 @@ class TestNdimageFilters:
         assert_array_almost_equal(tmp, output)
 
     @skip_xp_backends("jax.numpy", reason="output array is read-only")
+    @skip_xp_backends("dask.array", reason="converts dask output array to numpy")
     @pytest.mark.parametrize('dtype',
                              ["int32", "float32", "float64",
                               "complex64", "complex128"])
@@ -1436,6 +1447,7 @@ class TestNdimageFilters:
         xp_assert_close(output, expected, rtol=1e-6, atol=1e-6)
 
     @skip_xp_backends("jax.numpy", reason="output array is read-only")
+    @skip_xp_backends("dask.array", reason="converts dask output array to numpy")
     @pytest.mark.parametrize('dtype',
                              ["int32", "float32", "float64",
                               "complex64", "complex128"])
@@ -1595,6 +1607,7 @@ class TestNdimageFilters:
                                               [5, 3, 3, 1, 1]]), output)
 
     @skip_xp_backends("jax.numpy", reason="assignment destination is read-only")
+    @skip_xp_backends("dask.array", reason="assignment destination is read-only")
     def test_minimum_filter05_overlap(self, xp):
         array = xp.asarray([[3, 2, 5, 1, 4],
                             [7, 6, 9, 3, 5],
@@ -1826,6 +1839,7 @@ class TestNdimageFilters:
     @skip_xp_backends("jax.numpy",
         reason="assignment destination is read-only",
     )
+    @xfail_xp_backends("dask.array", reason="wrong answer")
     def test_rank06_overlap(self, xp):
         array = xp.asarray([[3, 2, 5, 1, 4],
                             [5, 8, 3, 7, 1],
@@ -2632,6 +2646,7 @@ def test_gaussian_radius_invalid(xp):
 
 
 @skip_xp_backends("jax.numpy", reason="output array is read-only")
+@xfail_xp_backends("dask.array", reason="wrong answer")
 class TestThreading:
     def check_func_thread(self, n, fun, args, out):
         from threading import Thread
@@ -2798,3 +2813,48 @@ def test_byte_order_median(xp):
     b = xp.arange(9, dtype='>f4').reshape(3, 3)
     t = ndimage.median_filter(b, (3, 3))
     assert_array_almost_equal(ref, t)
+
+
+@pytest.mark.parametrize("filter_size, exp", [
+    # expected results from SciPy 1.14.1
+    (20, 0.25754605),
+    (10,
+     np.array([0.25266576, 0.27894721, 0.30445588, 0.30958242, 0.30445588, 0.30445588,
+               0.27894721, 0.30445588, 0.27894721, 0.30445588, 0.30445588, 0.25754605,
+               0.22183391, 0.18015438, 0.22183391, 0.25266576, 0.25754605, 0.25266576,
+               0.25266576, 0.25266576]),
+     ),
+     # a median filter size of 1 is just an identity operation
+     (1,
+      np.array([0.30958242, 0.17555138, 0.34343917, 0.27894721, 0.03767094, 0.39024894,
+                0.30445588, 0.31442572, 0.05124545, 0.18015438, 0.14831921, 0.370706,
+                0.25754605, 0.32910465, 0.17736568, 0.09089549, 0.22183391, 0.0255269,
+                0.33105247, 0.25266576]),
+     ),
+     # testing odd-sized filters >1 makes sense too
+     (3,
+      np.array([0.25266576, 0.30958242, 0.27894721, 0.27894721, 0.27894721, 0.30445588,
+                0.31442572, 0.30445588, 0.18015438, 0.14831921, 0.18015438, 0.25754605,
+                0.32910465, 0.25754605, 0.17736568, 0.17736568, 0.09089549, 0.22183391,
+                0.25266576, 0.30958242]),
+     ),
+     (15,
+      np.array([0.27894721, 0.25266576, 0.25266576, 0.25266576, 0.27894721, 0.27894721,
+                0.27894721, 0.27894721, 0.25754605, 0.25754605, 0.22183391, 0.22183391,
+                0.25266576, 0.25266576, 0.22183391, 0.22183391, 0.25266576, 0.25266576,
+                0.25754605, 0.25754605]),
+     ),
+])
+def test_gh_22250(filter_size, exp):
+    rng = np.random.default_rng(42)
+    image = np.zeros((20,))
+    noisy_image = image + 0.4 * rng.random(image.shape)
+    result = ndimage.median_filter(noisy_image, size=filter_size, mode='wrap')
+    assert_allclose(result, exp)
+
+
+def test_gh_22333():
+    x = np.array([272, 58, 67, 163, 463, 608, 87, 108, 1378])
+    expected = [58, 67, 87, 108, 163, 108, 108, 108, 87]
+    actual = ndimage.median_filter(x, size=9, mode='constant')
+    assert_array_equal(actual, expected)
